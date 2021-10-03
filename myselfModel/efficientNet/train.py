@@ -37,15 +37,16 @@ def main(args):
                 "B7": 600}
     num_model = "B4"
 
+    # transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])])
     data_transform = {
         "train": transforms.Compose([transforms.RandomResizedCrop(img_size[num_model]),
                                      transforms.RandomHorizontalFlip(),
                                      transforms.ToTensor(),
-                                     transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])]),
+                                     transforms.Normalize([0.485], [0.229])]),
         "val": transforms.Compose([transforms.Resize(img_size[num_model]),
                                    transforms.CenterCrop(img_size[num_model]),
                                    transforms.ToTensor(),
-                                   transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])])}
+                                   transforms.Normalize([0.485], [0.229])])}
 
     # 实例化训练数据集
     train_dataset = MyDataSet(images_path=train_images_path,
@@ -126,7 +127,7 @@ def main(args):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--num_classes', type=int, default=2)
-    parser.add_argument('--epochs', type=int, default=30)
+    parser.add_argument('--epochs', type=int, default=5000)
     parser.add_argument('--batch-size', type=int, default=16)
     parser.add_argument('--lr', type=float, default=0.01)
     parser.add_argument('--lrf', type=float, default=0.01)
@@ -134,7 +135,7 @@ if __name__ == '__main__':
     # 数据集所在根目录
     # http://download.tensorflow.org/example_images/flower_photos.tgz
     parser.add_argument('--data-path', type=str,
-                        default="./flower_photos")
+                        default="/Users/chenjinsheng/Downloads/XinLong_2013_class")
 
     # download model weights
     # 链接: https://pan.baidu.com/s/1ouX0UmjCsmSx3ZrqXbowjw  密码: 090i
