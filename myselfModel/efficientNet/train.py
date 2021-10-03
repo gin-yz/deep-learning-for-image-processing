@@ -12,6 +12,7 @@ from model import efficientnet_b4 as create_model
 from my_dataset import MyDataSet
 from utils import read_split_data, train_one_epoch, evaluate
 
+
 # KMP_DUPLICATE_LIB_OK=TRUE
 # os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
 
@@ -137,7 +138,7 @@ if __name__ == '__main__':
 
     # download model weights
     # 链接: https://pan.baidu.com/s/1ouX0UmjCsmSx3ZrqXbowjw  密码: 090i
-    parser.add_argument('--weights', type=str, default='./efficientnetb0.pth',
+    parser.add_argument('--weights', type=str, default='./efficientnetb4.pth',
                         help='initial weights path')
     parser.add_argument('--freeze-layers', type=bool, default=False)
     parser.add_argument('--device', default='cuda:5', help='device id (i.e. 0 or 0,1 or cpu)')

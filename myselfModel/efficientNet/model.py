@@ -250,7 +250,7 @@ class EfficientNet(nn.Module):
         layers = OrderedDict()
 
         # first conv
-        layers.update({"stem_conv": ConvBNActivation(in_planes=3,
+        layers.update({"stem_conv": ConvBNActivation(in_planes=1,
                                                      out_planes=adjust_channels(32),
                                                      kernel_size=3,
                                                      stride=2,
@@ -334,7 +334,7 @@ def efficientnet_b3(num_classes=1000):
                         num_classes=num_classes)
 
 
-def efficientnet_b4(num_classes=1000):
+def efficientnet_b4(num_classes=2):
     # input image size 380x380
     return EfficientNet(width_coefficient=1.4,
                         depth_coefficient=1.8,

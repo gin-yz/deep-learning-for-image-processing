@@ -9,7 +9,7 @@ import torch.nn as nn
 from torch import Tensor
 from torch.nn import functional as F
 
-#使得channel同8的倍数最接近
+
 def _make_divisible(ch, divisor=8, min_ch=None):
     """
     This function is taken from the original tf repo.
@@ -130,7 +130,7 @@ class InvertedResidualConfig:
     def adjust_channels(channels: int, width_coefficient: float):
         return _make_divisible(channels * width_coefficient, 8)
 
-#MBConv
+
 class InvertedResidual(nn.Module):
     def __init__(self,
                  cnf: InvertedResidualConfig,
