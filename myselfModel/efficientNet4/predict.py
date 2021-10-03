@@ -25,18 +25,22 @@ def main():
     data_transform = transforms.Compose(
         [transforms.Resize(img_size[num_model]),
          transforms.CenterCrop(img_size[num_model]),
-         transforms.ToTensor(),
-         transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])])
+         # transforms.ToTensor(),
+         transforms.Normalize([0.485], [0.229])])
 
     # load image
-    img_path = "../tulip.jpg"
-    assert os.path.exists(img_path), "file: '{}' dose not exist.".format(img_path)
-    img = Image.open(img_path)
-    plt.imshow(img)
+    img_path = "/Users/chenjinsheng/Downloads/XinLong_2013_class/other"
+    # assert os.path.exists(img_path), "file: '{}' dose not exist.".format(img_path)
+
+    supported = [".jpg", ".JPG", ".png", ".PNG"]  # 支持的文件后缀类型
+    image_paths = [os.path.join(img_path, i) for i in os.listdir(img_path)
+                   if os.path.splitext(i)[-1] in supported]
+    # img = Image.open(img_path)
+    # plt.imshow(img)
     # [N, C, H, W]
-    img = data_transform(img)
+    # img = data_transform(img)
     # expand batch dimension
-    img = torch.unsqueeze(img, dim=0)
+    # img = torch.unsqueeze(img, dim=0)
 
     # read class_indict
     json_path = './class_indices.json'
@@ -46,23 +50,26 @@ def main():
     class_indict = json.load(json_file)
 
     # create model
-    model = create_model(num_classes=5).to(device)
+    model = create_model(num_classes=2).to(device)
     # load model weights
-    model_weight_path = "./weights/model-29.pth"
+    model_weight_path = "./model-29.pth"
     model.load_state_dict(torch.load(model_weight_path, map_location=device))
     model.eval()
-    with torch.no_grad():
-        # predict class
-        output = torch.squeeze(model(img.to(device))).cpu()
-        predict = torch.softmax(output, dim=0)
-        predict_cla = torch.argmax(predict).numpy()
 
-    print_res = "class: {}   prob: {:.3}".format(class_indict[str(predict_cla)],
-                                                 predict[predict_cla].numpy())
-    plt.title(print_res)
-    print(print_res)
-    plt.show()
+    for img_path in image_paths:
+        img = Image.open(img_path)
+        img = data_transform(img)
+        img = torch.unsqueeze(img, dim=0)
+        with torch.no_grad():
+            output = torch.squeeze(model(img.to(device))).cpu()
+            predict = torch.softmax(output, dim=0)
+            predict_cla = torch.argmax(predict).numpy()
+            if(predict_cla == 1):
+                print(img_path)
 
+        # print_res = "class: {}   prob: {:.3}".format(class_indict[str(predict_cla)],
+        #                                              predict[predict_cla].numpy())
+        # print(print_res)
 
 if __name__ == '__main__':
     main()
