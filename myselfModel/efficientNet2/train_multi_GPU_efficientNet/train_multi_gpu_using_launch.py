@@ -8,7 +8,7 @@ import torch.optim as optim
 import torch.optim.lr_scheduler as lr_scheduler
 from torch.utils.tensorboard import SummaryWriter
 from torchvision import transforms
-from model import efficientnet_b4 as create_model
+from model import efficientnet_b7 as create_model
 from my_dataset import MyDataSet
 from utils import read_split_data, plot_data_loader_image
 from multi_train_utils.distributed_utils import init_distributed_mode, dist, cleanup
@@ -48,7 +48,7 @@ def main(args):
                 "B5": 456,
                 "B6": 528,
                 "B7": 600}
-    num_model = "B4"
+    num_model = "B7"
 
     # check num_classes
     assert args.num_classes == num_classes, "dataset num_classes: {}, input {}".format(args.num_classes,
@@ -174,8 +174,8 @@ def main(args):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--num_classes', type=int, default=5)
-    parser.add_argument('--epochs', type=int, default=200)
-    parser.add_argument('--batch-size', type=int, default=16)
+    parser.add_argument('--epochs', type=int, default=30)
+    parser.add_argument('--batch-size', type=int, default=4)
     parser.add_argument('--lr', type=float, default=0.01)
     parser.add_argument('--lrf', type=float, default=0.01)
     # 是否启用SyncBatchNorm
@@ -187,7 +187,7 @@ if __name__ == '__main__':
 
     # resnet34 官方权重下载地址
     # https://download.pytorch.org/models/resnet34-333f7ec4.pth
-    parser.add_argument('--weights', type=str, default='../efficientnetb4.pth',
+    parser.add_argument('--weights', type=str, default='../efficientnetb7.pth',
                         help='initial weights path')
     parser.add_argument('--freeze-layers', type=bool, default=False)
     # 不要改该参数，系统会自动分配

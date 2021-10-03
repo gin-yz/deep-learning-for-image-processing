@@ -4,24 +4,42 @@ import tempfile
 import argparse
 
 import torch
+import torch.multiprocessing as mp
+from torch.multiprocessing import Process
 import torch.optim as optim
 import torch.optim.lr_scheduler as lr_scheduler
 from torch.utils.tensorboard import SummaryWriter
 from torchvision import transforms
-from model import efficientnet_b4 as create_model
+
+from model import resnet34
 from my_dataset import MyDataSet
 from utils import read_split_data, plot_data_loader_image
-from multi_train_utils.distributed_utils import init_distributed_mode, dist, cleanup
+from multi_train_utils.distributed_utils import dist, cleanup
 from multi_train_utils.train_eval_utils import train_one_epoch, evaluate
 
-os.environ["CUDA_VISIBLE_DEVICES"] = "1,2,3,4"
 
-def main(args):
+def main_fun(rank, world_size, args):
     if torch.cuda.is_available() is False:
         raise EnvironmentError("not find GPU device for training.")
 
-    # 初始化各进程环境
-    init_distributed_mode(args=args)
+    # 初始化各进程环境 start
+    os.environ["MASTER_ADDR"] = "localhost"
+    os.environ["MASTER_PORT"] = "12355"
+
+    args.rank = rank
+    args.world_size = world_size
+    args.gpu = rank
+
+    args.distributed = True
+
+    torch.cuda.set_device(args.gpu)
+    args.dist_backend = 'nccl'
+    print('| distributed init (rank {}): {}'.format(
+        args.rank, args.dist_url), flush=True)
+    dist.init_process_group(backend=args.dist_backend, init_method=args.dist_url,
+                            world_size=args.world_size, rank=args.rank)
+    dist.barrier()
+    # 初始化各进程环境 end
 
     rank = args.rank
     device = torch.device(args.device)
@@ -40,27 +58,17 @@ def main(args):
     train_images_path, train_images_label = train_info
     val_images_path, val_images_label = val_info
 
-    img_size = {"B0": 224,
-                "B1": 240,
-                "B2": 260,
-                "B3": 300,
-                "B4": 380,
-                "B5": 456,
-                "B6": 528,
-                "B7": 600}
-    num_model = "B4"
-
     # check num_classes
     assert args.num_classes == num_classes, "dataset num_classes: {}, input {}".format(args.num_classes,
                                                                                        num_classes)
 
     data_transform = {
-        "train": transforms.Compose([transforms.RandomResizedCrop(img_size[num_model]),
+        "train": transforms.Compose([transforms.RandomResizedCrop(224),
                                      transforms.RandomHorizontalFlip(),
                                      transforms.ToTensor(),
                                      transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])]),
-        "val": transforms.Compose([transforms.Resize(img_size[num_model]),
-                                   transforms.CenterCrop(img_size[num_model]),
+        "val": transforms.Compose([transforms.Resize(256),
+                                   transforms.CenterCrop(224),
                                    transforms.ToTensor(),
                                    transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])])}
 
@@ -85,6 +93,7 @@ def main(args):
     nw = min([os.cpu_count(), batch_size if batch_size > 1 else 0, 8])  # number of workers
     if rank == 0:
         print('Using {} dataloader workers every process'.format(nw))
+
     train_loader = torch.utils.data.DataLoader(train_data_set,
                                                batch_sampler=train_batch_sampler,
                                                pin_memory=True,
@@ -98,7 +107,7 @@ def main(args):
                                              num_workers=nw,
                                              collate_fn=val_data_set.collate_fn)
     # 实例化模型
-    model = create_model(num_classes=args.num_classes).to(device)
+    model = resnet34(num_classes=num_classes).to(device)
 
     # 如果存在预训练权重则载入
     if os.path.exists(weights_path):
@@ -174,28 +183,44 @@ def main(args):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--num_classes', type=int, default=5)
-    parser.add_argument('--epochs', type=int, default=200)
+    parser.add_argument('--epochs', type=int, default=30)
     parser.add_argument('--batch-size', type=int, default=16)
-    parser.add_argument('--lr', type=float, default=0.01)
-    parser.add_argument('--lrf', type=float, default=0.01)
+    parser.add_argument('--lr', type=float, default=0.001)
+    parser.add_argument('--lrf', type=float, default=0.1)
     # 是否启用SyncBatchNorm
     parser.add_argument('--syncBN', type=bool, default=True)
 
     # 数据集所在根目录
     # http://download.tensorflow.org/example_images/flower_photos.tgz
-    parser.add_argument('--data-path', type=str, default="../flower_photos")
+    parser.add_argument('--data-path', type=str, default="/home/wz/data_set/flower_data/flower_photos")
 
     # resnet34 官方权重下载地址
     # https://download.pytorch.org/models/resnet34-333f7ec4.pth
-    parser.add_argument('--weights', type=str, default='../efficientnetb4.pth',
+    parser.add_argument('--weights', type=str, default='resNet34.pth',
                         help='initial weights path')
     parser.add_argument('--freeze-layers', type=bool, default=False)
     # 不要改该参数，系统会自动分配
     parser.add_argument('--device', default='cuda', help='device id (i.e. 0 or 0,1 or cpu)')
-    # 开启的进程数(注意不是线程),不用设置该参数，会根据nproc_per_node自动设置
+    # 开启的进程数(注意不是线程),在单机中指使用GPU的数量
     parser.add_argument('--world-size', default=4, type=int,
                         help='number of distributed processes')
     parser.add_argument('--dist-url', default='env://', help='url used to set up distributed training')
     opt = parser.parse_args()
 
-    main(opt)
+    # when using mp.spawn, if I set number of works greater 1,
+    # before each epoch training and validation will wait about 10 seconds
+
+    # mp.spawn(main_fun,
+    #          args=(opt.world_size, opt),
+    #          nprocs=opt.world_size,
+    #          join=True)
+
+    world_size = opt.world_size
+    processes = []
+    for rank in range(world_size):
+        p = Process(target=main_fun, args=(rank, world_size, opt))
+        p.start()
+        processes.append(p)
+    for p in processes:
+        p.join()
+
