@@ -8,7 +8,7 @@ from torch.utils.tensorboard import SummaryWriter
 from torchvision import transforms
 import torch.optim.lr_scheduler as lr_scheduler
 
-from model import efficientnet_b4 as create_model
+from model import efficientnet_b0 as create_model
 from my_dataset import MyDataSet
 from utils import read_split_data, train_one_epoch, evaluate
 
@@ -35,7 +35,7 @@ def main(args):
                 "B5": 456,
                 "B6": 528,
                 "B7": 600}
-    num_model = "B4"
+    num_model = "B0"
 
     # transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])])
     data_transform = {
@@ -139,10 +139,10 @@ if __name__ == '__main__':
 
     # download model weights
     # 链接: https://pan.baidu.com/s/1ouX0UmjCsmSx3ZrqXbowjw  密码: 090i
-    parser.add_argument('--weights', type=str, default='./efficientnetb4.pth',
+    parser.add_argument('--weights', type=str, default='./efficientnetb0.pth',
                         help='initial weights path')
     parser.add_argument('--freeze-layers', type=bool, default=False)
-    parser.add_argument('--device', default='cuda:5', help='device id (i.e. 0 or 0,1 or cpu)')
+    parser.add_argument('--device', default='cuda:2', help='device id (i.e. 0 or 0,1 or cpu)')
 
     opt = parser.parse_args()
 

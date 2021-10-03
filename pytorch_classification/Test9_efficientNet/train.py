@@ -133,11 +133,11 @@ if __name__ == '__main__':
     # 数据集所在根目录
     # http://download.tensorflow.org/example_images/flower_photos.tgz
     parser.add_argument('--data-path', type=str,
-                        default="/Users/chenjinsheng/Downloads/XinLong_2013_class")
+                        default="./flower_photos")
 
     # download model weights
     # 链接: https://pan.baidu.com/s/1ouX0UmjCsmSx3ZrqXbowjw  密码: 090i
-    parser.add_argument('--weights', type=str, default='./efficientnetb4.pth',
+    parser.add_argument('--weights', type=str, default='./efficientnetb0.pth',
                         help='initial weights path')
     parser.add_argument('--freeze-layers', type=bool, default=False)
     parser.add_argument('--device', default='cuda:5', help='device id (i.e. 0 or 0,1 or cpu)')
