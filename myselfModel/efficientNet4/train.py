@@ -137,12 +137,13 @@ if __name__ == '__main__':
     parser.add_argument('--data-path', type=str,
                         default="/home/chenjs/nfsdata/handleImg/XinLong_2013_class")
 
+
     # download model weights
     # 链接: https://pan.baidu.com/s/1ouX0UmjCsmSx3ZrqXbowjw  密码: 090i
     parser.add_argument('--weights', type=str, default='./efficientnetb0.pth',
                         help='initial weights path')
     parser.add_argument('--freeze-layers', type=bool, default=False)
-    parser.add_argument('--device', default='cuda:2', help='device id (i.e. 0 or 0,1 or cpu)')
+    parser.add_argument('--device', default='cuda:3', help='device id (i.e. 0 or 0,1 or cpu)')
 
     opt = parser.parse_args()
 

@@ -26,29 +26,29 @@ def main():
         [transforms.Resize(img_size[num_model]),
          transforms.CenterCrop(img_size[num_model]),
          transforms.ToTensor(),
-         transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])])
+         transforms.Normalize([0.485], [0.229])])
 
     # load image
-    img_path = "../tulip.jpg"
+    img_path = "E:\Downloads\\test\\20130311190003_XL109_7_8658_60000_B1_G3.png"
     assert os.path.exists(img_path), "file: '{}' dose not exist.".format(img_path)
     img = Image.open(img_path)
-    plt.imshow(img)
+    # plt.imshow(img)
     # [N, C, H, W]
     img = data_transform(img)
     # expand batch dimension
     img = torch.unsqueeze(img, dim=0)
 
     # read class_indict
-    json_path = './class_indices.json'
+    json_path = 'D:\PycharmProjects\deep-learning-for-image-processing\myselfModel\efficientNet4\class_indices.json'
     assert os.path.exists(json_path), "file: '{}' dose not exist.".format(json_path)
 
     json_file = open(json_path, "r")
     class_indict = json.load(json_file)
 
     # create model
-    model = create_model(num_classes=5).to(device)
+    model = create_model(num_classes=2).to(device)
     # load model weights
-    model_weight_path = "./weights/model-29.pth"
+    model_weight_path = "../efficientNet4/weights/model-22.pth"
     model.load_state_dict(torch.load(model_weight_path, map_location=device))
     model.eval()
     with torch.no_grad():
@@ -59,9 +59,9 @@ def main():
 
     print_res = "class: {}   prob: {:.3}".format(class_indict[str(predict_cla)],
                                                  predict[predict_cla].numpy())
-    plt.title(print_res)
+    # plt.title(print_res)
     print(print_res)
-    plt.show()
+    # plt.show()
 
 
 if __name__ == '__main__':
