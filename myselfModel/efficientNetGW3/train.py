@@ -8,7 +8,7 @@ from torch.utils.tensorboard import SummaryWriter
 from torchvision import transforms
 import torch.optim.lr_scheduler as lr_scheduler
 
-from model import efficientnet_b4 as create_model
+from model import efficientnet_b0 as create_model
 from my_dataset import MyDataSet
 from utils import read_split_data, train_one_epoch, evaluate
 
@@ -35,7 +35,7 @@ def main(args):
                 "B5": 456,
                 "B6": 528,
                 "B7": 600}
-    num_model = "B4"
+    num_model = "B0"
 
     # transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])])
     data_transform = {
@@ -127,8 +127,8 @@ def main(args):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--num_classes', type=int, default=2)
-    parser.add_argument('--epochs', type=int, default=100)
-    parser.add_argument('--batch-size', type=int, default=16)
+    parser.add_argument('--epochs', type=int, default=1000)
+    parser.add_argument('--batch-size', type=int, default=64)
     parser.add_argument('--lr', type=float, default=0.01)
     parser.add_argument('--lrf', type=float, default=0.01)
 
@@ -140,7 +140,7 @@ if __name__ == '__main__':
 
     # download model weights
     # 链接: https://pan.baidu.com/s/1ouX0UmjCsmSx3ZrqXbowjw  密码: 090i
-    parser.add_argument('--weights', type=str, default='./efficientnetb4.pth',
+    parser.add_argument('--weights', type=str, default='./efficientnetb0.pth',
                         help='initial weights path')
     parser.add_argument('--freeze-layers', type=bool, default=False)
     parser.add_argument('--device', default='cuda:4', help='device id (i.e. 0 or 0,1 or cpu)')
