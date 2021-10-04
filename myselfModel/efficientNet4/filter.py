@@ -75,17 +75,20 @@ def filter_image_with_dl(src_name, dst_name):
             for i in range(0, iter_num):
                 img_tensor = torch.stack(img_open[i * 200:(i + 1) * 200], dim=0).to(device)
 
-                with torch.no_grad():
-                    image_path_sub = np.array(image_paths)[i * 200:(i + 1) * 200]
-                    dst_path_sub = np.array(dst_paths)[i * 200:(i + 1) * 200]
-                    output = torch.squeeze(model(img_tensor)).cpu()
-                    predict = torch.softmax(output, dim=1)
-                    predict_cla = torch.argmax(predict, dim=1).numpy()
-                    chose_img_index_list = np.argwhere(predict_cla == 0)
-                    img_chose = image_path_sub[chose_img_index_list.reshape(-1)]
-                    dst_cp_path = dst_path_sub[chose_img_index_list.reshape(-1)]
-                    for src, dst in zip(img_chose, dst_cp_path):
-                        copyfile(src, dst)
+                try:
+                    with torch.no_grad():
+                        image_path_sub = np.array(image_paths)[i * 200:(i + 1) * 200]
+                        dst_path_sub = np.array(dst_paths)[i * 200:(i + 1) * 200]
+                        output = torch.squeeze(model(img_tensor)).cpu()
+                        predict = torch.softmax(output, dim=1)
+                        predict_cla = torch.argmax(predict, dim=1).numpy()
+                        chose_img_index_list = np.argwhere(predict_cla == 0)
+                        img_chose = image_path_sub[chose_img_index_list.reshape(-1)]
+                        dst_cp_path = dst_path_sub[chose_img_index_list.reshape(-1)]
+                        for src, dst in zip(img_chose, dst_cp_path):
+                            copyfile(src, dst)
+                except:
+                    pass
 
 
 if __name__ == '__main__':
