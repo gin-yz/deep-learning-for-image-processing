@@ -135,7 +135,7 @@ if __name__ == '__main__':
     # 数据集所在根目录
     # http://download.tensorflow.org/example_images/flower_photos.tgz
     parser.add_argument('--data-path', type=str,
-                        default="/home/chenjs/nfsdata/handleImg/XinLong_2013_class")
+                        default="/home/chenjs/nfsdata/ASA_airglow_image/XinLong_2013_first")
 
 
     # download model weights
