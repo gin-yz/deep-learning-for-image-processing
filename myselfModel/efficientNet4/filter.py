@@ -7,6 +7,7 @@ from shutil import copyfile
 
 from model import efficientnet_b0 as create_model
 
+
 # os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
 
 
@@ -59,17 +60,32 @@ def filter_image_with_dl(src_name, dst_name):
             dst_paths = [os.path.join(dst_path, i) for i in files
                          if os.path.splitext(i)[-1] in supported]
             img_open = [data_transform(Image.open(path)) for path in image_paths]
-            img_tensor = torch.stack(img_open, dim=0).to(device)
+            # img_tensor = torch.stack(img_open, dim=0).to(device)
+            #
+            # with torch.no_grad():
+            #     output = torch.squeeze(model(img_tensor)).cpu()
+            #     predict = torch.softmax(output, dim=1)
+            #     predict_cla = torch.argmax(predict, dim=1).numpy()
+            #     chose_img_index_list = np.argwhere(predict_cla == 0)
+            #     img_chose = np.array(image_paths)[chose_img_index_list.reshape(-1)]
+            #     dst_cp_path = np.array(dst_paths)[chose_img_index_list.reshape(-1)]
+            #     for src, dst in zip(img_chose, dst_cp_path):
+            #         copyfile(src, dst)
+            iter_num = (len(img_open) // 200) + 1
+            for i in range(0, iter_num):
+                img_tensor = torch.stack(img_open[i * 200:(i + 1) * 200], dim=0).to(device)
 
-            with torch.no_grad():
-                output = torch.squeeze(model(img_tensor)).cpu()
-                predict = torch.softmax(output, dim=1)
-                predict_cla = torch.argmax(predict, dim=1).numpy()
-                chose_img_index_list = np.argwhere(predict_cla == 0)
-                img_chose = np.array(image_paths)[chose_img_index_list.reshape(-1)]
-                dst_cp_path = np.array(dst_paths)[chose_img_index_list.reshape(-1)]
-                for src, dst in zip(img_chose, dst_cp_path):
-                    copyfile(src, dst)
+                with torch.no_grad():
+                    image_path_sub = np.array(image_paths)[i * 200:(i + 1) * 200]
+                    dst_path_sub = np.array(dst_paths)[i * 200:(i + 1) * 200]
+                    output = torch.squeeze(model(img_tensor)).cpu()
+                    predict = torch.softmax(output, dim=1)
+                    predict_cla = torch.argmax(predict, dim=1).numpy()
+                    chose_img_index_list = np.argwhere(predict_cla == 0)
+                    img_chose = image_path_sub[chose_img_index_list.reshape(-1)]
+                    dst_cp_path = dst_path_sub[chose_img_index_list.reshape(-1)]
+                    for src, dst in zip(img_chose, dst_cp_path):
+                        copyfile(src, dst)
 
 
 if __name__ == '__main__':
