@@ -61,9 +61,9 @@ def filter_image_with_dl(src_name, dst_name):
             img_open = [data_transform(Image.open(path)) for path in image_paths]
             iter_num = (len(img_open) // 200) + 1
             for i in range(0, iter_num):
-                img_tensor = torch.stack(img_open[i * 200:(i + 1) * 200], dim=0).to(device)
 
                 try:
+                    img_tensor = torch.stack(img_open[i * 200:(i + 1) * 200], dim=0).to(device)
                     with torch.no_grad():
                         image_path_sub = np.array(image_paths)[i * 200:(i + 1) * 200]
                         dst_path_sub = np.array(dst_paths)[i * 200:(i + 1) * 200]
