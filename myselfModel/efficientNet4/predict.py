@@ -61,15 +61,18 @@ def filter_image_with_dl(src_name, dst_name):
             img_open = [data_transform(Image.open(path)) for path in image_paths]
             img_tensor = torch.stack(img_open, dim=0).to(device)
 
-            with torch.no_grad():
-                output = torch.squeeze(model(img_tensor)).cpu()
-                predict = torch.softmax(output, dim=1)
-                predict_cla = torch.argmax(predict, dim=1).numpy()
-                chose_img_index_list = np.argwhere(predict_cla == 0)
-                img_chose = np.array(image_paths)[chose_img_index_list.reshape(-1)]
-                dst_cp_path = np.array(dst_paths)[chose_img_index_list.reshape(-1)]
-                for src, dst in zip(img_chose, dst_cp_path):
-                    copyfile(src, dst)
+            try:
+                with torch.no_grad():
+                    output = torch.squeeze(model(img_tensor)).cpu()
+                    predict = torch.softmax(output, dim=1)
+                    predict_cla = torch.argmax(predict, dim=1).numpy()
+                    chose_img_index_list = np.argwhere(predict_cla == 0)
+                    img_chose = np.array(image_paths)[chose_img_index_list.reshape(-1)]
+                    dst_cp_path = np.array(dst_paths)[chose_img_index_list.reshape(-1)]
+                    for src, dst in zip(img_chose, dst_cp_path):
+                        copyfile(src, dst)
+            except:
+                pass
 
 
 if __name__ == '__main__':
